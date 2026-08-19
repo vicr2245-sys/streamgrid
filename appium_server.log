@@ -1,0 +1,170 @@
+[38;5;112m[Appium][0m Welcome to Appium v3.6.0
+[38;5;112m[Appium][0m The autodetected Appium home path: C:\Users\victo\.appium
+[38;5;112m[Appium][0m Attempting to load driver uiautomator2...
+[38;5;112m[Appium][0m Requiring driver at C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\build\lib\index.js
+[38;5;112m[Appium][0m AndroidUiautomator2Driver has been successfully loaded in 3.028s
+[38;5;112m[Appium][0m Appium REST http interface listener started on http://0.0.0.0:4723
+[38;5;112m[Appium][0m You can provide the following URLs in your client code to connect to this server:
+	http://192.168.50.245:4723/
+	http://127.0.0.1:4723/ (only accessible from the same host)
+[38;5;112m[Appium][0m Available drivers:
+[38;5;112m[Appium][0m   - uiautomator2@7.1.0 (automationName 'UiAutomator2')
+[38;5;112m[Appium][0m No plugins have been installed. Use the "appium plugin" command to install the one(s) you want to use.
+[38;5;112m[Appium][0m Welcome to Appium v3.6.0
+[38;5;112m[Appium][0m The autodetected Appium home path: C:\Users\victo\.appium
+[38;5;112m[Appium][0m Attempting to load driver uiautomator2...
+[38;5;112m[Appium][0m Requiring driver at C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\build\lib\index.js
+[38;5;112m[Appium][0m AndroidUiautomator2Driver has been successfully loaded in 3.200s
+[38;5;112m[Appium][0m Appium REST http interface listener started on http://0.0.0.0:4723
+[38;5;112m[Appium][0m You can provide the following URLs in your client code to connect to this server:
+	http://192.168.50.245:4723/
+	http://127.0.0.1:4723/ (only accessible from the same host)
+[38;5;112m[Appium][0m Available drivers:
+[38;5;112m[Appium][0m   - uiautomator2@7.1.0 (automationName 'UiAutomator2')
+[38;5;112m[Appium][0m No plugins have been installed. Use the "appium plugin" command to install the one(s) you want to use.
+[38;5;86m[HTTP][0m --> GET /status 
+[38;5;32m[AppiumDriver@fc3b][0m Calling AppiumDriver.getStatus() with args: []
+[38;5;32m[AppiumDriver@fc3b][0m Responding to client with driver.getStatus() result: {"ready":true,"message":"The server is ready to accept new connections","build":{"version":"3.6.0"}}
+[38;5;86m[HTTP][0m <-- GET /status 200 10 ms - 110
+[38;5;86m[HTTP][0m Request idempotency key: 76fcff65-cf40-4fc0-b332-9012de72e363
+[38;5;86m[HTTP][0m --> POST /session {"capabilities":{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UIAutomator2","platformName":"Android","appium:deviceName":"AQH7N18409001833","appium:udid":"AQH7N18409001833","appium:appPackage":"com.spotify.music","appium:appActivity":"com.spotify.music.MainActivity","appium:noReset":true,"appium:autoGrantPermissions":true,"appium:newCommandTimeout":3600}}}
+[38;5;32m[AppiumDriver@fc3b][0m Calling AppiumDriver.createSession() with args: [{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UIAutomator2","platformName":"Android","appium:deviceName":"AQH7N18409001833","appium:udid":"AQH7N18409001833","appium:appPackage":"com.spotify.music","appium:appActivity":"com.spotify.music.MainActivity","appium:noReset":true,"appium:autoGrantPermissions":true,"appium:newCommandTimeout":3600}},{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UIAutomator2","platformName":"Android","appium:deviceName":"AQH7N18409001833","appium:udid":"AQH7N18409001833","appium:appPackage":"com.spotify.music","appium:appActivity":"com.spotify.music.MainActivity","appium:noReset":true,"appium:autoGrantPermissions":true,"appium:newCommandTimeout":3600}},{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UIAutomator2","platformName":"Android","appium:deviceName":"AQH7N18409001833","appium:udid":"AQH7N18409001833","appium:appPackage":"com.spotify.music","appium:appActivity":"com.spotify.music.MainActivity","appium:noReset":true,"appium:autoGrantPermissio…
+[38;5;32m[AppiumDriver@fc3b][0m Event 'newSessionRequested' logged at 1786963852259 (12:50:52 GMT+0200 (sentraleuropeisk sommertid))
+[38;5;112m[Appium][0m Attempting to find matching driver for automationName 'UIAutomator2' and platformName 'Android'
+[38;5;112m[Appium][0m The 'uiautomator2' driver was installed and matched caps.
+[38;5;112m[Appium][0m Will require it at C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver
+[38;5;112m[Appium][0m Requiring driver at C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\build\lib\index.js
+[38;5;32m[AppiumDriver@fc3b][0m Appium v3.6.0 creating new AndroidUiautomator2Driver (v7.1.0) session
+[38;5;32m[AppiumDriver@fc3b][0m Checking BaseDriver versions for Appium and AndroidUiautomator2Driver
+[38;5;32m[AppiumDriver@fc3b][0m Appium's BaseDriver version is 10.7.2
+[38;5;32m[AppiumDriver@fc3b][0m AndroidUiautomator2Driver's BaseDriver version is 10.7.2
+[38;5;-73m[AndroidUiautomator2Driver@7904][0m 
+[38;5;-73m[AndroidUiautomator2Driver@7904][0m Creating session with W3C capabilities: {
+  "alwaysMatch": {
+    "platformName": "Android",
+    "appium:automationName": "UIAutomator2",
+    "appium:deviceName": "AQH7N18409001833",
+    "appium:udid": "AQH7N18409001833",
+    "appium:appPackage": "com.spotify.music",
+    "appium:appActivity": "com.spotify.music.MainActivity",
+    "appium:noReset": true,
+    "appium:autoGrantPermissions": true,
+    "appium:newCommandTimeout": 3600
+  },
+  "firstMatch": [
+    {}
+  ]
+}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Session created with session id: 6e2d8e8b-33ef-40b6-9e61-71df80f42ec4
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Found 1 'build-tools' folders under 'C:\Users\victo\AppData\Local\Android\Sdk' (newest first):
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m     C:\Users\victo\AppData\Local\Android\Sdk\build-tools\36.1.0
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Using 'adb.exe' from 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 start-server'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Retrieving device list
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Trying to find connected Android devices
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Connected devices: [{"udid":"AQH7N18409001833","state":"device"}]
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Using device: AQH7N18409001833
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Using 'adb.exe' from 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 start-server'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Setting device id to AQH7N18409001833
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Starting 'com.spotify.music' directly on the device
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell getprop ro.build.version.sdk'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.sdk': 29
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Getting device platform version
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell getprop ro.build.version.release'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.release': 10
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Device API level: 29
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Relaxing hidden api policy
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell 'settings put global hidden_api_policy_pre_p_apps 1;settings put global hidden_api_policy_p_apps 1;settings put global hidden_api_policy 1''
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Pushing settings apk to the device...
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Getting package info for 'io.appium.settings'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell dumpsys package io.appium.settings'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Using 'aapt2.exe' from 'C:\Users\victo\AppData\Local\Android\Sdk\build-tools\36.1.0\aapt2.exe'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Reading package manifest: ''C:\Users\victo\AppData\Local\Android\Sdk\build-tools\36.1.0\aapt2.exe' dump badging 'C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\node_modules\io.appium.settings\apks\settings_apk-debug.apk''
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m The version name of the installed 'io.appium.settings' is greater or equal to the application version name ('7.0.22' >= '7.0.22')
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m There is no need to install/upgrade 'C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\node_modules\io.appium.settings\apks\settings_apk-debug.apk'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell dumpsys activity services io.appium.settings'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m io.appium.settings is already running. There is no need to reset its permissions.
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell appops set io.appium.settings android:mock_location allow'
+[38;5;192m[6e2d8e8b][0m[38;5;160m[Logcat][0m Starting logs capture with command: 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe' -P 5037 -s AQH7N18409001833 logcat -v threadtime
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell "[ -e '/data/local/tmp/mock_apps.json' ] && echo __PASS__"'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell cat /data/local/tmp/mock_apps.json'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Forwarding UiAutomator2 Server port 6790 to local port 8200
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Forwarding system: 8200 to device: 6790
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 forward tcp:8200 tcp:6790'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m UIA2Proxy options: {"scheme":"http","server":"127.0.0.1","port":8200,"base":"","reqBasePath":"","sessionId":null,"timeout":240000,"keepAlive":true}
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Getting package info for 'io.appium.uiautomator2.server'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell dumpsys package io.appium.uiautomator2.server'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Getting install status for io.appium.uiautomator2.server.test
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m No app capability. Assuming it is already on the device
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell cmd package list packages --show-versioncode'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Reading package manifest: ''C:\Users\victo\AppData\Local\Android\Sdk\build-tools\36.1.0\aapt2.exe' dump badging 'C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\node_modules\appium-uiautomator2-server\apks\appium-uiautomator2-server-v9.11.1.apk''
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m 'io.appium.uiautomator2.server.test' is installed
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m The version name of the installed 'io.appium.uiautomator2.server' is greater or equal to the application version name ('9.11.1' >= '9.11.1')
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Server packages status: [{"installState":"sameVersionInstalled","appPath":"C:\\Users\\victo\\.appium\\node_modules\\appium-uiautomator2-driver\\node_modules\\appium-uiautomator2-server\\apks\\appium-uiautomator2-server-v9.11.1.apk","appId":"io.appium.uiautomator2.server"},{"installState":"sameVersionInstalled","appPath":"C:\\Users\\victo\\.appium\\node_modules\\appium-uiautomator2-driver\\node_modules\\appium-uiautomator2-server\\apks\\appium-uiautomator2-server-debug-androidTest.apk","appId":"io.appium.uiautomator2.server.test"}]
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Server packages are not going to be (re)installed
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Waiting up to 30000ms for services to be available
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell pm list instrumentation'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Instrumentation target 'io.appium.uiautomator2.server.test/androidx.test.runner.AndroidJUnitRunner' is available
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Adding packages ["io.appium.settings","io.appium.uiautomator2.server","io.appium.uiautomator2.server.test"] to Doze whitelist
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Got the following command chunks to execute: [["dumpsys","deviceidle","whitelist","+io.appium.settings",";","dumpsys","deviceidle","whitelist","+io.appium.uiautomator2.server",";","dumpsys","deviceidle","whitelist","+io.appium.uiautomator2.server.test",";"]]
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell dumpsys deviceidle whitelist +io.appium.settings ; dumpsys deviceidle whitelist +io.appium.uiautomator2.server ; dumpsys deviceidle whitelist +io.appium.uiautomator2.server.test ;'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Performing shallow cleanup of automation leftovers
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m No obsolete sessions have been detected (socket hang up)
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell am force-stop io.appium.uiautomator2.server'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell am force-stop io.appium.uiautomator2.server.test'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Starting UIAutomator2 server 9.11.1
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Using UIAutomator2 server from 'C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\node_modules\appium-uiautomator2-server\apks\appium-uiautomator2-server-v9.11.1.apk' and test from 'C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\node_modules\appium-uiautomator2-server\apks\appium-uiautomator2-server-debug-androidTest.apk'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Waiting up to 30000ms for UiAutomator2 to be online...
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Creating ADB subprocess with args: ["-P","5037","-s","AQH7N18409001833","shell","am","instrument","-w","-e","disableAnalytics","true","io.appium.uiautomator2.server.test/androidx.test.runner.AndroidJUnitRunner"]
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Matched '/status' to command name 'getStatus'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m socket hang up
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Matched '/status' to command name 'getStatus'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m socket hang up
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m [Instrumentation] 
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Matched '/status' to command name 'getStatus'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m socket hang up
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Matched '/status' to command name 'getStatus'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Got response with status 200: {"sessionId":"None","value":{"build":{"version":"9.11.1","versionCode":253},"message":"UiAutomator2 Server is ready to accept commands","ready":true}}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m The initialization of the instrumentation process took 3234ms
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Matched '/session' to command name 'createSession'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [POST /session] to [POST http://127.0.0.1:8200/session] with body: {"capabilities":{"firstMatch":[{"platformName":"Android","automationName":"UIAutomator2","deviceName":"AQH7N18409001833","udid":"AQH7N18409001833","appPackage":"com.spotify.music","appActivity":"com.spotify.music.MainActivity","noReset":true,"autoGrantPermissions":true,"newCommandTimeout":3600,"platform":"LINUX","webStorageEnabled":false,"takesScreenshot":true,"javascriptEnabled":true,"databaseEnabled":false,"networkConnectionEnabled":true,"locationContextEnabled":false,"warnings":{},"desired":{"platformName":"Android","automationName":"UIAutomator2","deviceName":"AQH7N18409001833","udid":"AQH7N18409001833","appPackage":"com.spotify.music","appActivity":"com.spotify.music.MainActivity","noReset":true,"autoGrantPermissions":true,"newCommandTimeout":3600},"deviceUDID":"AQH7N18409001833"}],"alwaysMatch":{}}}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Got response with status 200: {"sessionId":"03045bd3-6cbc-4a78-9d2b-d87418e9beb4","value":{"capabilities":{"firstMatch":[{"platformName":"Android","automationName":"UIAutomator2","deviceName":"AQH7N18409001833","udid":"AQH7N18409001833","appPackage":"com.spotify.music","appActivity":"com.spotify.music.MainActivity","noReset":true,"autoGrantPermissions":true,"newCommandTimeout":3600,"platform":"LINUX","webStorageEnabled":false,"takesScreenshot":true,"javascriptEnabled":true,"databaseEnabled":false,"networkConnectionEnabled":true,"locationContextEnabled":false,"warnings":{},"desired":{"platformName":"Android","automationName":"UIAutomator2","deviceName":"AQH7N18409001833","udid":"AQH7N18409001833","appPackage":"com.spotify.music","appActivity":"com.spotify.music.MainActivity","noReset":true,"autoGrantPermissions":true,"newCommandTimeout":3600},"deviceUDID":"AQH7N18409001833"}],"alwaysMatch":{}},"sessionId":"03045bd3-6cbc-4a78-9d2b-d87418e9beb4"}}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Determined the downstream protocol as 'W3C'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /appium/device/pixel_ratio] to [GET http://127.0.0.1:8200/session/03045bd3-6cbc-4a78-9d2b-d87418e9beb4/appium/device/pixel_ratio] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /appium/device/system_bars] to [GET http://127.0.0.1:8200/session/03045bd3-6cbc-4a78-9d2b-d87418e9beb4/appium/device/system_bars] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /window/current/size] to [GET http://127.0.0.1:8200/session/03045bd3-6cbc-4a78-9d2b-d87418e9beb4/window/current/size] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Proxying [GET /appium/device/info] to [GET http://127.0.0.1:8200/session/03045bd3-6cbc-4a78-9d2b-d87418e9beb4/appium/device/info] with no body
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell dumpsys window'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell dumpsys power'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Got response with status 200: {"sessionId":"03045bd3-6cbc-4a78-9d2b-d87418e9beb4","value":2}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Got response with status 200: {"sessionId":"03045bd3-6cbc-4a78-9d2b-d87418e9beb4","value":{"statusBar":48}}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Got response with status 200: {"sessionId":"03045bd3-6cbc-4a78-9d2b-d87418e9beb4","value":{"height":1440,"width":720}}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Got response with status 200: {"sessionId":"03045bd3-6cbc-4a78-9d2b-d87418e9beb4","value":{"androidId":"1d3c81a071156e65","apiVersion":"29","bluetooth":{"state":"OFF"},"brand":"HUAWEI","carrierName":"","displayDensity":320,"locale":"nb_NO","manufacturer":"HUAWEI","model":"BLA-L29","networks":[{"capabilities":{"SSID":null,"linkDownBandwidthKbps":1048576,"linkUpstreamBandwidthKbps":1048576,"networkCapabilities":"NET_CAPABILITY_NOT_METERED,NET_CAPABILITY_INTERNET,NET_CAPABILITY_NOT_RESTRICTED,NET_CAPABILITY_TRUSTED,NET_CAPABILITY_NOT_VPN,NET_CAPABILITY_VALIDATED,NET_CAPABILITY_NOT_ROAMING,NET_CAPABILITY_FOREGROUND,NET_CAPABILITY_NOT_CONGESTED,NET_CAPABILITY_NOT_SUSPENDED","signalStrength":-58,"transportTypes":"TRANSPORT_WIFI"},"detailedState":"CONNECTED","extraInfo":null,"isAvailable":true,"isConnected":true,"isFailover":false,"isRoaming":false,"state":"CONNECTED","subtype":0,"subtypeName":"","type":1,"typeName":"WIFI"}],"platformVersion":"10","realDisplaySize":"720x1440","timeZone":"Europe/Oslo"}}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Screen already unlocked, doing nothing
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Starting 'com.spotify.music/com.spotify.music.MainActivity' and waiting for 'com.spotify.music/com.spotify.music.MainActivity'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Getting IDs of all 'com.spotify.music' processes
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell ps --help'
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell ps -A'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m 'com.spotify.music' is already running and noReset is enabled. Set forceAppLaunch capability to true if the app must be forcefully restarted on session startup.
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Initialized new IPC object with max object size of 1048576 bytes and max topics of 1000
+[38;5;192m[6e2d8e8b][0m[38;5;32m[AppiumDriver@fc3b][0m New AndroidUiautomator2Driver session created successfully, session 6e2d8e8b-33ef-40b6-9e61-71df80f42ec4 added to master session list
+[38;5;192m[6e2d8e8b][0m[38;5;32m[AppiumDriver@fc3b][0m Event 'newSessionStarted' logged at 1786963858668 (12:50:58 GMT+0200 (sentraleuropeisk sommertid))
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Cached the protocol value 'W3C' for the new session 6e2d8e8b-33ef-40b6-9e61-71df80f42ec4
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Responding to client with driver.createSession() result: {"capabilities":{"platformName":"Android","automationName":"UIAutomator2","deviceName":"AQH7N18409001833","udid":"AQH7N18409001833","appPackage":"com.spotify.music","appActivity":"com.spotify.music.MainActivity","noReset":true,"autoGrantPermissions":true,"newCommandTimeout":3600,"platform":"LINUX","webStorageEnabled":false,"takesScreenshot":true,"javascriptEnabled":true,"databaseEnabled":false,"networkConnectionEnabled":true,"locationContextEnabled":false,"warnings":{},"desired":{"platformName":"Android","automationName":"UIAutomator2","deviceName":"AQH7N18409001833","udid":"AQH7N18409001833","appPackage":"com.spotify.music","appActivity":"com.spotify.music.MainActivity","noReset":true,"autoGrantPermissions":true,"newCommandTimeout":3600},"deviceUDID":"AQH7N18409001833","pixelRatio":"2","statBarHeight":48,"viewportRect":{"left":0,"top":48,"width":720,"height":1392},"deviceApiLevel":29,"platformVersion":"10","deviceManufacturer":"HUAWEI","deviceModel":"BLA-L29","deviceScreenSize":"720x1440","deviceScreenDensi…
+[38;5;86m[HTTP][0m <-- POST /session 200 6412 ms - 1093
+[38;5;192m[6e2d8e8b][0m[38;5;86m[HTTP][0m --> POST /session/6e2d8e8b-33ef-40b6-9e61-71df80f42ec4/url {"url":"https://ipinfo.io/json"}
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Calling AppiumDriver.setUrl() with args: ["https://ipinfo.io/json","6e2d8e8b-33ef-40b6-9e61-71df80f42ec4"]
+[38;5;192m[6e2d8e8b][0m[38;5;229m[ADB][0m Running 'C:\Users\victo\AppData\Local\Android\Sdk\platform-tools\adb.exe -P 5037 -s AQH7N18409001833 shell am start -W -a android.intent.action.VIEW -d https://ipinfo.io/json com.spotify.music'
+[38;5;192m[6e2d8e8b][0m[38;5;-73m[AndroidUiautomator2Driver@7904][0m Encountered internal error running command: Error: Error attempting to start URI. Original error: Error: Starting: Intent { act=android.intent.action.VIEW dat=https://ipinfo.io/... pkg=com.spotify.music }
+Error: Activity not started, unable to resolve Intent { act=android.intent.action.VIEW dat=https://ipinfo.io/... flg=0x10000000 pkg=com.spotify.music }
+    at ADB.startUri (C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\node_modules\appium-adb\build\lib\tools\app-commands.js:544:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async AndroidUiautomator2Driver.setUrl (C:\Users\victo\.appium\node_modules\appium-uiautomator2-driver\build\lib\commands\navigation.js:11:5)
+    at async runCommandPromise (C:\Users\victo\AppData\Roaming\npm\node_modules\appium\node_modules\@appium\base-driver\build\lib\basedriver\driver.js:119:24)
+[38;5;86m[HTTP][0m <-- POST /session/6e2d8e8b-33ef-40b6-9e61-71df80f42ec4/url 500 177 ms - 2036

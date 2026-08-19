@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamGrid — Multi-Device Streaming Engine</title>
+  <meta name="description" content="Orchestrate 10 to 50+ Android devices in parallel with WireGuard Residential IP tunneling, human thumb emulation, and OLED screen dimming.">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090c;
+      --surface: #0f1318;
+      --surface2: #161c24;
+      --border: #232c38;
+      --green: #1db954;
+      --green-glow: rgba(29, 185, 84, 0.25);
+      --blue: #38bdf8;
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --sans: 'Plus Jakarta Sans', sans-serif;
+      --mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+
+    /* Background Glow Elements */
+    .glow-1 { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(circle, var(--green-glow) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+    .glow-2 { position: absolute; top: 600px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%); pointer-events: none; }
+
+    /* Header Navigation */
+    header { max-width: 1200px; margin: 0 auto; padding: 24px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
+    .logo { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-weight: 700; font-size: 18px; color: #fff; text-decoration: none; }
+    .logo-badge { background: rgba(29, 185, 84, 0.15); border: 1px solid var(--green); color: var(--green); font-size: 10px; padding: 2px 8px; border-radius: 99px; }
+    .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .cta-btn { background: var(--green); color: #000; font-weight: 700; font-size: 14px; padding: 10px 22px; border-radius: 8px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 20px var(--green-glow); }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(29, 185, 84, 0.4); }
+
+    /* Hero Section */
+    .hero { max-width: 1100px; margin: 80px auto 40px; text-align: center; padding: 0 24px; position: relative; z-index: 2; }
+    .tagline { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); padding: 6px 16px; border-radius: 99px; font-size: 13px; font-family: var(--mono); color: var(--green); margin-bottom: 24px; }
+    .hero h1 { font-size: 56px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 18px; color: var(--muted); max-width: 720px; margin: 0 auto 36px; font-weight: 400; }
+    .hero-actions { display: flex; gap: 16px; justify-content: center; }
+    .secondary-btn { background: var(--surface2); border: 1px solid var(--border); color: #fff; font-weight: 600; font-size: 14px; padding: 12px 24px; border-radius: 8px; text-decoration: none; transition: background 0.2s, border-color 0.2s; }
+    .secondary-btn:hover { border-color: var(--muted); background: var(--border); }
+
+    /* Live Interface Preview Mockup */
+    .preview-container { max-width: 1000px; margin: 60px auto 100px; padding: 0 24px; }
+    .preview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
+    .preview-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #334155; }
+    .preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .mock-dev { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .mock-title { display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+    .mock-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .mock-bar { height: 4px; background: var(--border); border-radius: 99px; margin: 10px 0; overflow: hidden; }
+    .mock-fill { height: 100%; width: 68%; background: var(--green); border-radius: 99px; }
+
+    /* Features Grid */
+    .features { max-width: 1200px; margin: 0 auto 120px; padding: 0 24px; }
+    .section-title { text-align: center; margin-bottom: 60px; }
+    .section-title h2 { font-size: 36px; font-weight: 800; margin-bottom: 12px; }
+    .section-title p { color: var(--muted); font-size: 16px; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+    .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 32px; transition: border-color 0.2s, transform 0.2s; }
+    .feature-card:hover { border-color: var(--green); transform: translateY(-4px); }
+    .icon-box { width: 48px; height: 48px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; color: var(--green); }
+    .feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .feature-card p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    /* Pricing Section */
+    .pricing { max-width: 1100px; margin: 0 auto 120px; padding: 0 24px; }
+    .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px 28px; display: flex; flex-direction: column; position: relative; }
+    .price-card.popular { border-color: var(--green); background: linear-gradient(180deg, rgba(29,185,84,0.05) 0%, var(--surface) 100%); }
+    .pop-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .price-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    .price-amount { font-size: 42px; font-weight: 800; margin-bottom: 6px; }
+    .price-amount span { font-size: 16px; color: var(--muted); font-weight: 400; }
+    .price-card p { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .price-features { list-style: none; margin-bottom: 32px; flex: 1; }
+    .price-features li { font-size: 14px; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .price-features li::before { content: "✓"; color: var(--green); font-weight: 800; }
+    .price-btn { display: block; text-align: center; background: var(--surface2); border: 1px solid var(--border); color: #fff; font-weight: 700; padding: 12px; border-radius: 8px; text-decoration: none; transition: all 0.2s; }
+    .price-btn:hover { background: var(--border); }
+    .price-card.popular .price-btn { background: var(--green); color: #000; border: none; box-shadow: 0 0 20px var(--green-glow); }
+    .price-card.popular .price-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(29,185,84,0.4); }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; font-size: 13px; color: var(--muted); font-family: var(--mono); }
+    footer a { color: var(--green); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <header>
+    <a href="#" class="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.208c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.856zm1.223-2.722a.78.78 0 01-1.072.257C14.3 12.267 10.85 11.73 8.085 12.56a.78.78 0 01-.453-1.492c3.1-.942 6.954-.485 9.624 1.063a.78.78 0 01.553 1.571zm.105-2.835C15.012 9.02 9.818 8.847 6.94 9.744A.935.935 0 116.36 7.94c3.29-1.001 8.76-.808 12.212 1.268a.936.936 0 01-1.658.659z"/></svg>
+      STREAM<span style="color:var(--green)">GRID</span>
+      <span class="logo-badge">v2.0 PRO</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="mailto:chestbot.support@gmail.com" style="color:var(--green)">Support</a></li>
+    </ul>
+    <!-- REPLACE BELOW href WITH YOUR STRIPE PAYMENT LINK -->
+    <a href="https://buy.stripe.com/YOUR_LINK_HERE" class="cta-btn">Get StreamGrid — $7</a>
+  </header>
+
+  <section class="hero">
+    <div class="tagline">⚡ Next-Gen Parallel Android Control</div>
+    <h1>Multi-Device<br>Streaming Engine</h1>
+    <p>Orchestrate 10 to 50+ Android phones simultaneously with WireGuard Residential IP tunneling, human thumb typing emulation, and OLED power saver controls.</p>
+    <div class="hero-actions">
+      <!-- REPLACE href WITH YOUR STRIPE LINK -->
+      <a href="https://buy.stripe.com/YOUR_LINK_HERE" class="cta-btn">Get Instant Access — $7</a>
+      <a href="#features" class="secondary-btn">Explore Features</a>
+    </div>
+  </section>
+
+  <div class="preview-container">
+    <div class="preview-card">
+      <div class="preview-header">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">StreamGrid Dashboard — 6 Active Devices Connected</div>
+      </div>
+      <div class="preview-grid">
+        <div class="mock-dev">
+          <div class="mock-title"><span>Pixel 6 (US-EAST)</span><span style="color:var(--green)">● Active</span></div>
+          <div class="mock-sub">IP: 198.51.100.45 (Comcast Residential)</div>
+          <div class="mock-bar"><div class="mock-fill" style="width:84%"></div></div>
+          <div class="mock-sub">Playing: Direct Track Deep Link</div>
+        </div>
+        <div class="mock-dev">
+          <div class="mock-title"><span>Galaxy S21 (CA-WEST)</span><span style="color:var(--green)">● Active</span></div>
+          <div class="mock-sub">IP: 142.250.190.46 (Rogers Residential)</div>
+          <div class="mock-bar"><div class="mock-fill" style="width:62%"></div></div>
+          <div class="mock-sub">Playing: Target Playlist Loop</div>
+        </div>
+        <div class="mock-dev">
+          <div class="mock-title"><span>Huawei BLA-L29 (UK-LON)</span><span style="color:var(--green)">● Active</span></div>
+          <div class="mock-sub">IP: 82.165.197.1 (Virgin Media IP)</div>
+          <div class="mock-bar"><div class="mock-fill" style="width:40%"></div></div>
+          <div class="mock-sub">OLED Dimmer & Stealth Mute ON</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="features" id="features">
+    <div class="section-title">
+      <h2>Engineered for Maximum Stealth & Scale</h2>
+      <p>Built from the ground up to bypass anti-bot pattern recognition algorithms.</p>
+    </div>
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="icon-box">⌨️</div>
+        <h3>Stealth Human Thumb Typing</h3>
+        <p>Emulates realistic smartphone thumb speed (50–80 WPM) complete with organic QWERTY key-proximity typos, hesitation delays, and backspace correction bursts.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box">🔒</div>
+        <h3>WireGuard & Residential IPs</h3>
+        <p>Routes 100% of phone traffic at the Android OS kernel level. Auto-pushes static verification binaries to inspect public IP, city, and home ISP provider.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box">🌙</div>
+        <h3>OLED Dimmer & Stealth Mute</h3>
+        <p>Automatically dims screen brightness to minimum and mutes media streams. Reduces battery consumption by ~70% and prevents OLED display burn-in.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box">📱</div>
+        <h3>Multi-Device Scrcpy Grid</h3>
+        <p>View and interact with 10 to 50+ connected phones simultaneously in a high-speed grid mirroring layout over USB or Wi-Fi ADB.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box">🎧</div>
+        <h3>Stream-First Human Engine</h3>
+        <p>Guarantees 95% clean, uninterrupted track streams with rare (5%) non-disruptive organic trust signals like track likes and volume micro-adjustments.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box">🕒</div>
+        <h3>Circadian & Fatigue Engine</h3>
+        <p>Dynamically slows interaction pace late at night (01:00–06:00) and inserts organic 5–15 minute rest breaks after continuous streaming sessions.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="section-title">
+      <h2>One-Time Purchase — Lifetime Access</h2>
+      <p>Instant access to the complete StreamGrid standalone Windows executable with lifetime software updates.</p>
+    </div>
+    <div style="max-width:480px;margin:0 auto">
+      <div class="price-card popular">
+        <div class="pop-badge">Special Offer</div>
+        <h3 style="font-size:24px;margin-bottom:8px">StreamGrid Full Pass</h3>
+        <div class="price-amount">$7 <span style="font-size:18px;color:var(--text);font-weight:600">USD (one-time)</span></div>
+        <p style="margin-bottom:20px">Get full access to all multi-device streaming features with zero recurring fees.</p>
+        <ul class="price-features">
+          <li>Unlimited Active Android Devices</li>
+          <li>Stealth Human Thumb Engine (50–80 WPM)</li>
+          <li>WireGuard Kernel Tunneling & IP Verification</li>
+          <li>OLED Screen Dimmer & Stealth Mute</li>
+          <li>Multi-Device Scrcpy Grid Mirroring</li>
+          <li>Standalone Executable (.exe) Download</li>
+          <li>All Future Updates & Priority Support</li>
+        </ul>
+        <!-- REPLACE href WITH YOUR STRIPE LINK -->
+        <a href="https://buy.stripe.com/YOUR_LINK_HERE" class="price-btn" style="font-size:16px;padding:14px">Get StreamGrid — $7 USD</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 StreamGrid Multi-Device Streaming Engine. Need help? Contact <a href="mailto:chestbot.support@gmail.com">chestbot.support@gmail.com</a></p>
+  </footer>
+
+</body>
+</html>

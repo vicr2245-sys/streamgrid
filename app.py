@@ -1160,37 +1160,12 @@ main{grid-area:mn;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:
 </aside>
 
 <main>
-  <div class="panel" style="border-left:4px solid var(--accent);background:var(--surface2)">
-    <div class="ph" style="cursor:pointer" onclick="toggleQuickGuide()">
-      <h2 style="display:flex;align-items:center;gap:8px">📘 Beginners Quick Setup Guide <span style="font-size:11px;font-family:var(--mono);color:var(--accent);font-weight:normal">(Click to collapse)</span></h2>
-      <button class="btn bg" onclick="event.stopPropagation();openModal('guide-modal')" style="font-size:11px;padding:4px 10px;background:var(--accent);color:#000;font-weight:700">Open Full Interactive Guide</button>
-    </div>
-    <div class="pb" id="quick-guide-body">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;font-size:12px;line-height:1.5">
-        <div style="background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--border)">
-          <div style="font-weight:700;color:var(--accent);margin-bottom:6px">1. Requirements</div>
-          <ul style="padding-left:16px;color:var(--text);display:flex;flex-direction:column;gap:4px">
-            <li>Android 7.0+ Phone(s) connected via USB</li>
-            <li>Spotify app pre-installed & logged in</li>
-            <li>Windows 10/11 PC</li>
-          </ul>
-        </div>
-        <div style="background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--border)">
-          <div style="font-weight:700;color:var(--accent);margin-bottom:6px">2. Enable USB Debugging</div>
-          <ul style="padding-left:16px;color:var(--text);display:flex;flex-direction:column;gap:4px">
-            <li>Settings → About Phone → Tap <b>Build Number 7 times</b></li>
-            <li>Settings → Developer Options → Turn ON <b>USB Debugging</b></li>
-            <li>Accept <i>"Always allow from this computer"</i> popup on phone</li>
-          </ul>
-        </div>
-        <div style="background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--border)">
-          <div style="font-weight:700;color:var(--accent);margin-bottom:6px">3. Connect & Run</div>
-          <ul style="padding-left:16px;color:var(--text);display:flex;flex-direction:column;gap:4px">
-            <li>Click <b>↻ Refresh Devices</b> & <b>⚡ Connect Appium (All)</b></li>
-            <li>Paste playlist URL in <i>Playlist Loop</i></li>
-            <li>Click <b>▶ Start All</b> (or press <code>Ctrl+Shift+S</code>)</li>
-          </ul>
-        </div>
+  <div class="panel" id="quick-guide-panel" style="border-left:4px solid var(--accent);background:var(--surface2);margin-bottom:14px">
+    <div class="ph" style="cursor:pointer" onclick="openModal('guide-modal')">
+      <h2 style="display:flex;align-items:center;gap:8px">📘 Beginners Setup Guide <span style="font-size:11px;font-family:var(--mono);color:var(--accent);font-weight:normal">(Click to open full step-by-step instructions)</span></h2>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+        <button class="btn bg" onclick="event.stopPropagation();openModal('guide-modal')" style="font-size:11px;padding:4px 12px;background:var(--accent);color:#000;font-weight:700">Open Full Guide</button>
+        <button class="btn bo" onclick="event.stopPropagation();closeQuickGuide()" style="font-size:11px;padding:4px 8px;color:var(--muted)" title="Dismiss banner">✕ Close</button>
       </div>
     </div>
   </div>
@@ -1667,10 +1642,19 @@ function openModal(id){const m=$(id);if(m)m.classList.add('open');}
 function closeModal(id){const m=$(id);if(m)m.classList.remove('open');}
 function openAddAcc(){openModal('acc-modal');}
 function openRegModal(){openModal('reg-modal');}
-function toggleQuickGuide(){
-  const body=$('quick-guide-body');
-  if(body) body.style.display=(body.style.display==='none')?'block':'none';
+function closeQuickGuide(){
+  const p=$('quick-guide-panel');
+  if(p) p.style.display='none';
+  localStorage.setItem('hideQuickGuide','true');
 }
+(()=>{
+  if(localStorage.getItem('hideQuickGuide')==='true'){
+    window.addEventListener('DOMContentLoaded',()=>{
+      const p=$('quick-guide-panel');
+      if(p) p.style.display='none';
+    });
+  }
+})();
 function switchMtab(e,tab){
   document.querySelectorAll('.tpane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));

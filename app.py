@@ -1250,7 +1250,6 @@ main{grid-area:mn;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:
         <button class="btn br2" onclick="api('/api/app/stop','POST')">&#9632; Force Stop</button>
         <button class="btn bo" onclick="api('/api/appium/playpause','POST')">&#9199; Play / Pause</button>
         <button class="btn bb" onclick="connectAllAppium()">&#9889; Connect Appium (All)</button>
-        <button class="btn bo" onclick="dismissPromosAll()" style="background:var(--surface2);border:1px solid var(--border)">🛡️ Dismiss Promos</button>
       </div>
     </div>
   </div>

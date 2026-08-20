@@ -483,59 +483,47 @@ def human_type_text(driver, bar, text, serial=None):
     try:
         if bar:
             bar.click()
-            time.sleep(0.2)
+            time.sleep(0.1)
             if hasattr(bar, 'text') and bar.text and len(bar.text) > 0:
                 driver.press_keycode(29, 28672)
                 driver.press_keycode(67)
     except Exception:
         pass
 
-    human_delay_gaussian(0.18, 0.05, min_sec=0.10, max_sec=0.30)
+    human_delay_gaussian(0.06, 0.02, min_sec=0.03, max_sec=0.10)
+
+    # If pasting a direct link or URI, use fast single-burst set_text
+    if is_url_or_uri(text):
+        if bar:
+            try:
+                bar.send_keys(text)
+                return
+            except Exception:
+                pass
+        if serial:
+            adb("shell", "input", "text", text.replace(" ", "%s"), serial=serial)
+            return
 
     i = 0
     while i < len(text):
         target_char = text[i]
 
-        if target_char.lower() in NEARBY_KEYS and random.random() < 0.12:
-            typo_len = random.choice([1, 2, 3])
-            typo_chars = []
-            curr_c = target_char.lower()
-            for _ in range(typo_len):
-                neighbors = NEARBY_KEYS.get(curr_c, [curr_c])
-                wrong_c = random.choice(neighbors)
-                if target_char.isupper():
-                    wrong_c = wrong_c.upper()
-                typo_chars.append(wrong_c)
-                curr_c = wrong_c.lower()
+        # Rare human typo (4% chance)
+        if target_char.lower() in NEARBY_KEYS and random.random() < 0.04:
+            wrong_c = random.choice(NEARBY_KEYS[target_char.lower()])
+            if target_char.isupper(): wrong_c = wrong_c.upper()
+            if bar:
+                try: bar.send_keys(wrong_c)
+                except Exception: pass
+            elif serial:
+                adb("shell", "input", "text", wrong_c, serial=serial)
+            human_delay_gaussian(0.03, 0.01, min_sec=0.015, max_sec=0.05)
 
-            for tc in typo_chars:
-                if bar:
-                    try: bar.send_keys(tc)
-                    except Exception: pass
-                elif serial:
-                    adb("shell", "input", "text", tc, serial=serial)
-                human_delay_gaussian(0.06, 0.02, min_sec=0.03, max_sec=0.12)
-
-            human_delay_gaussian(0.18, 0.04, min_sec=0.10, max_sec=0.28)
-
-            num_backspaces = min(len(typo_chars), random.choice([1, 2, 3]))
-            for _ in range(num_backspaces):
-                try: driver.press_keycode(67)
-                except Exception:
-                    if serial: adb("shell", "input", "keyevent", "67", serial=serial)
-                human_delay_gaussian(0.07, 0.02, min_sec=0.03, max_sec=0.14)
-
-            remaining = len(typo_chars) - num_backspaces
-            for _ in range(remaining):
-                try: driver.press_keycode(67)
-                except Exception:
-                    if serial: adb("shell", "input", "keyevent", "67", serial=serial)
-                human_delay_gaussian(0.06, 0.02, min_sec=0.03, max_sec=0.12)
-
-            human_delay_gaussian(0.12, 0.03, min_sec=0.06, max_sec=0.20)
-
-        if target_char.isupper() or target_char in "!@#$%^&*()_+{}|:\"<>?":
-            human_delay_gaussian(0.10, 0.03, min_sec=0.05, max_sec=0.18)
+            # Quick Backspace correction
+            try: driver.press_keycode(67)
+            except Exception:
+                if serial: adb("shell", "input", "keyevent", "67", serial=serial)
+            human_delay_gaussian(0.03, 0.01, min_sec=0.015, max_sec=0.05)
 
         if bar:
             try: bar.send_keys(target_char)
@@ -548,9 +536,9 @@ def human_type_text(driver, bar, text, serial=None):
             adb("shell", "input", "text", safe_tc, serial=serial)
 
         if target_char == " ":
-            human_delay_gaussian(0.09, 0.025, min_sec=0.04, max_sec=0.16)
+            human_delay_gaussian(0.035, 0.01, min_sec=0.015, max_sec=0.06)
         else:
-            human_delay_gaussian(0.045, 0.015, min_sec=0.025, max_sec=0.095)
+            human_delay_gaussian(0.015, 0.005, min_sec=0.008, max_sec=0.035)
 
         i += 1
 

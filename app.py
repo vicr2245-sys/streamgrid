@@ -381,8 +381,46 @@ def cubic_bezier(p0, p1, p2, p3, t):
     y = uuu * p0[1] + 3 * uu * t * p1[1] + 3 * u * tt * p2[1] + ttt * p3[1]
     return int(x), int(y)
 
-def human_drag_gesture(driver, sx, sy, ex, ey):
+def check_and_heal_driver(serial=None, err=None):
+    """
+    Detects if UiAutomator2 server crashed or dropped instrumentation process,
+    and automatically re-creates the driver session to heal Appium.
+    """
+    err_str = str(err).lower() if err else ""
+    if any(k in err_str for k in ["uiautomator2", "instrumentation process", "cannot be proxied", "session", "closed"]):
+        emit(f"[{serial[-6:] if serial else 'Device'}] 🏥 UiAutomator2 crash detected — auto-recovering Appium driver...", "warning")
+        try:
+            if serial:
+                new_drv = _make_driver(serial)
+                if new_drv:
+                    state["drivers"][serial] = new_drv
+                    emit(f"[{serial[-6:]}] Appium driver recovered OK", "info")
+                    return new_drv
+        except Exception as e:
+            emit(f"Driver recovery error: {e}", "error")
+    return None
+
+def human_drag_gesture(driver, sx, sy, ex, ey, serial=None):
     """Performs a natural curved touch gesture with ease-in-out velocity profile."""
+    # Priority 1: High-reliability ADB swipe if serial is available (100% immune to UiAutomator2 crashes!)
+    if serial:
+        try:
+            dur = random.randint(300, 500)
+            res = adb("shell", "input", "swipe", str(sx), str(sy), str(ex), str(ey), str(dur), serial=serial)
+            if res and "error" not in str(res).lower():
+                return True
+        except Exception:
+            pass
+
+    try:
+        if driver:
+            driver.execute_script('mobile: dragGesture', {
+                'startX': sx, 'startY': sy, 'endX': ex, 'endY': ey, 'speed': random.randint(800, 1200)
+            })
+            return True
+    except Exception as e:
+        check_and_heal_driver(serial, e)
+
     mid_x = (sx + ex) // 2
     mid_y = (sy + ey) // 2
     offset_x = random.randint(-40, 40)
@@ -391,14 +429,6 @@ def human_drag_gesture(driver, sx, sy, ex, ey):
     p1 = (sx + offset_x, sy + offset_y)
     p2 = (mid_x + offset_x, mid_y - offset_y)
     p3 = (ex, ey)
-
-    try:
-        driver.execute_script('mobile: dragGesture', {
-            'startX': sx, 'startY': sy, 'endX': ex, 'endY': ey, 'speed': random.randint(800, 1200)
-        })
-        return True
-    except Exception:
-        pass
 
     try:
         from selenium.webdriver.common.action_chains import ActionChains
@@ -423,10 +453,16 @@ def human_drag_gesture(driver, sx, sy, ex, ey):
         actions.w3c_actions.pointer_action.pointer_up()
         actions.perform()
         return True
-    except Exception:
-        if hasattr(driver, 'swipe'):
-            driver.swipe(sx, sy, ex, ey, duration=random.randint(250, 450))
-            return True
+    except Exception as e:
+        check_and_heal_driver(serial, e)
+        if driver and hasattr(driver, 'swipe'):
+            try:
+                driver.swipe(sx, sy, ex, ey, duration=random.randint(250, 450))
+                return True
+            except Exception:
+                pass
+    return False
+
 def human_network_jitter():
     """Simulates realistic mobile cellular (4G/5G) / Wi-Fi network latency fluctuations (20ms-180ms)."""
     jitter_sec = max(0.015, random.gauss(0.075, 0.025))
@@ -438,7 +474,6 @@ def human_click_drift(driver, element=None, x=None, y=None, serial=None):
     and simulates a natural thumb contact patch (touch down -> 2-4px slight drift -> touch up).
     """
     human_network_jitter()
-    from selenium.webdriver.common.action_chains import ActionChains
     try:
         if element:
             loc = element.location
@@ -453,8 +488,18 @@ def human_click_drift(driver, element=None, x=None, y=None, serial=None):
         dx = jx + random.choice([-3, -2, 2, 3])
         dy = jy + random.choice([-3, -2, 2, 3])
 
+        # Priority 1: High-reliability ADB swipe if serial is available (100% immune to UiAutomator2 crashes!)
+        if serial:
+            try:
+                res = adb("shell", "input", "swipe", str(jx), str(jy), str(dx), str(dy), "60", serial=serial)
+                if res and "error" not in str(res).lower():
+                    return True
+            except Exception:
+                pass
+
         if driver:
             try:
+                from selenium.webdriver.common.action_chains import ActionChains
                 actions = ActionChains(driver)
                 actions.w3c_actions.pointer_action.move_to_location(jx, jy)
                 actions.w3c_actions.pointer_action.pointer_down()
@@ -463,16 +508,14 @@ def human_click_drift(driver, element=None, x=None, y=None, serial=None):
                 actions.w3c_actions.pointer_action.pointer_up()
                 actions.perform()
                 return True
-            except Exception:
-                pass
+            except Exception as e:
+                check_and_heal_driver(serial, e)
 
-        if serial:
-            adb("shell", "input", "swipe", str(jx), str(jy), str(dx), str(dy), "60", serial=serial)
-            return True
-    except Exception:
         if element:
             try: element.click(); return True
             except Exception: pass
+    except Exception as e:
+        check_and_heal_driver(serial, e)
     return False
 
 def organic_playlist_browse(driver, serial=None):
@@ -481,22 +524,27 @@ def organic_playlist_browse(driver, serial=None):
     pauses as if inspecting track titles, scrolls back up slightly, and selects a track.
     """
     try:
-        if not driver: return
-        window_size = driver.get_window_size()
-        w = window_size.get('width', 1080)
-        h = window_size.get('height', 1920)
+        if not driver and not serial: return
+        w, h = 1080, 1920
+        if driver:
+            try:
+                window_size = driver.get_window_size()
+                w = window_size.get('width', 1080)
+                h = window_size.get('height', 1920)
+            except Exception:
+                pass
 
         sx = w // 2 + random.randint(-40, 40)
         sy = int(h * 0.68) + random.randint(-20, 20)
         ey = int(h * 0.35) + random.randint(-20, 20)
-        human_drag_gesture(driver, sx, sy, sx, ey)
+        human_drag_gesture(driver, sx, sy, sx, ey, serial=serial)
         emit(f"[{serial[-6:] if serial else 'Device'}] 📜 Human playlist scroll down")
         human_delay_gaussian(1.5, 0.4)
 
         if random.random() < 0.45:
             sy_up = int(h * 0.40)
             ey_up = int(h * 0.55)
-            human_drag_gesture(driver, sx, sy_up, sx, ey_up)
+            human_drag_gesture(driver, sx, sy_up, sx, ey_up, serial=serial)
             emit(f"[{serial[-6:] if serial else 'Device'}] 📜 Human scroll nudge up")
             human_delay_gaussian(1.0, 0.3)
     except Exception:

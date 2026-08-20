@@ -706,8 +706,80 @@ def restart_song(driver):
     except Exception as e:
         emit("Restart failed: "+str(e),"error")
 
-def ensure_playing(driver):
+def auto_dismiss_promos(driver=None, serial=None):
+    """
+    Detects and automatically dismisses promotional popups, Premium upsell offer cards,
+    and dialog overlays (such as 'avvis', 'Dismiss', 'Not now', 'No thanks', 'Close').
+    """
     from appium.webdriver.common.appiumby import AppiumBy
+    dismissed = False
+
+    if driver:
+        # 1. Try Spotify specific resource IDs for popups / upsells
+        promo_ids = [
+            "com.spotify.music:id/dismiss_button",
+            "com.spotify.music:id/close_button",
+            "com.spotify.music:id/btn_dismiss",
+            "com.spotify.music:id/secondary_button",
+            "com.spotify.music:id/negative_button",
+            "com.spotify.music:id/tertiary_button",
+            "com.spotify.music:id/upsell_dismiss_button",
+            "com.spotify.music:id/button_dismiss"
+        ]
+        for pid in promo_ids:
+            try:
+                els = driver.find_elements(AppiumBy.ID, pid)
+                if els:
+                    els[0].click()
+                    dismissed = True
+                    emit(f"[{serial[-6:] if serial else 'Device'}] 🛡️ Dismissed promo overlay (ID: {pid.split('/')[-1]})")
+                    time.sleep(0.5)
+                    break
+            except Exception:
+                pass
+
+        if not dismissed:
+            # 2. Try XPath matching for multi-lingual dismiss buttons (avvis, dismiss, not now, close, etc.)
+            xpath_pattern = (
+                '//*[contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "avvis") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "dismiss") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "not now") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "no thanks") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "nei takk") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "maybe later") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "lukk") or '
+                'contains(translate(@text, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "close")]'
+            )
+            try:
+                els = driver.find_elements(AppiumBy.XPATH, xpath_pattern)
+                if els:
+                    for el in els:
+                        txt = (el.text or "").strip().lower()
+                        # Avoid clicking main CTA buttons like "få tre måneder"
+                        if any(w in txt for w in ["avvis", "dismiss", "not now", "no thanks", "nei takk", "lukk", "close", "maybe later"]):
+                            el.click()
+                            dismissed = True
+                            emit(f"[{serial[-6:] if serial else 'Device'}] 🛡️ Dismissed promo modal ('{txt}')")
+                            time.sleep(0.5)
+                            break
+            except Exception:
+                pass
+
+    # 3. Fallback: Issue KEYCODE_BACK (4) via ADB to force close overlay
+    if not dismissed and serial:
+        try:
+            res = adb("shell", "input", "keyevent", "4", serial=serial)
+            if res and "error" not in str(res).lower():
+                dismissed = True
+                emit(f"[{serial[-6:]}] 🛡️ Issued BACK keyevent to dismiss promo overlay")
+        except Exception:
+            pass
+
+    return dismissed
+
+def ensure_playing(driver, serial=None):
+    from appium.webdriver.common.appiumby import AppiumBy
+    auto_dismiss_promos(driver, serial=serial)
     try: driver.find_element(AppiumBy.ACCESSIBILITY_ID,plat()["play_label"]).click()
     except Exception: pass
 
@@ -1178,6 +1250,7 @@ main{grid-area:mn;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:
         <button class="btn br2" onclick="api('/api/app/stop','POST')">&#9632; Force Stop</button>
         <button class="btn bo" onclick="api('/api/appium/playpause','POST')">&#9199; Play / Pause</button>
         <button class="btn bb" onclick="connectAllAppium()">&#9889; Connect Appium (All)</button>
+        <button class="btn bo" onclick="dismissPromosAll()" style="background:var(--surface2);border:1px solid var(--border)">🛡️ Dismiss Promos</button>
       </div>
     </div>
   </div>
@@ -1660,6 +1733,15 @@ function switchMtab(e,tab){
   document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
   $(tab).classList.add('active');e.target.classList.add('active');
 }
+async function dismissPromosAll(){
+  logLine('🛡️ Checking & dismissing promo popups across all connected devices...','info');
+  const res = await api('/api/appium/dismiss_promos','POST');
+  if(res && res.ok){
+    logLine(`🛡️ Dismissed promo popups on ${res.dismissed_count || 0} device(s)`, 'info');
+  } else {
+    logLine(`Failed to dismiss popups: ${(res && res.error) || 'Unknown error'}`, 'warning');
+  }
+}
 async function saveAccount(){
   const acc={email:$('am-email').value.trim(),password:$('am-pass').value,
     platform:$('am-plt').value,tier:$('am-tier').value,
@@ -1949,6 +2031,22 @@ def api_appium_playpause():
     if not drv: return jsonify({'ok':False,'error':'Not connected'})
     try: drv.find_element(AppiumBy.ACCESSIBILITY_ID,plat()['play_label']).click(); return jsonify({'ok':True})
     except Exception as e: return jsonify({'ok':False,'error':str(e)})
+
+@app.route('/api/appium/dismiss_promos', methods=['POST'])
+def api_dismiss_promos():
+    data = request.get_json(silent=True) or {}
+    target_serials = data.get('serials')
+    if not target_serials:
+        target_serials = list(state['drivers'].keys())
+    if not target_serials:
+        target_serials = [d['serial'] for d in get_adb_devices()]
+    
+    count = 0
+    for s in target_serials:
+        drv = state['drivers'].get(s)
+        if auto_dismiss_promos(drv, serial=s):
+            count += 1
+    return jsonify({'ok': True, 'dismissed_count': count})
 
 @app.route('/api/appium/loop/start', methods=['POST'])
 def api_loop_start():

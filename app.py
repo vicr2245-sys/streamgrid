@@ -67,6 +67,9 @@ state = {
     "loops":        {},
     "watchdogs":    {},
     "appium_server_proc": None,
+    "persona":      "super_fan",
+    "battery_spoof": True,
+    "schedule":     {"enabled": False, "start_hour": 7, "stop_hour": 23}
 }
 log_queue = queue.Queue()
 
@@ -307,10 +310,27 @@ def _make_driver(serial):
 
 def _watchdog(serial):
     emit("Watchdog started: "+serial)
+    p = plat()
+    pkg = p.get("package", "com.spotify.music")
     while serial in state["watchdogs"]:
         time.sleep(RECONNECT_INTERVAL)
         driver = state["drivers"].get(serial)
         if not driver: continue
+
+        # Self-Healing Check: Ensure target app is focused in foreground
+        try:
+            focus_out = adb("shell", "dumpsys", "window", "displays", serial=serial)
+            if focus_out and pkg not in str(focus_out):
+                loop = state["loops"].get(serial, {})
+                if loop.get("active"):
+                    emit(f"[{serial[-6:]}] 🏥 Self-Healing Watchdog: App closed/crashed — auto-relaunching {pkg}")
+                    adb("shell", "am", "start", "-n", f"{pkg}/{p['activity']}", serial=serial)
+                    time.sleep(4.0)
+                    auto_dismiss_promos(driver, serial=serial)
+                    ensure_playing(driver, serial=serial)
+        except Exception:
+            pass
+
         try: _ = driver.current_activity
         except Exception:
             emit("Session dropped: "+serial+" — reconnecting...", "warning")
@@ -321,6 +341,8 @@ def _watchdog(serial):
                 if new_drv:
                     state["drivers"][serial] = new_drv
                     emit("Reconnected: "+serial+" OK")
+                    auto_dismiss_promos(new_drv, serial=serial)
+                    ensure_playing(new_drv, serial=serial)
                     break
             else:
                 emit("Reconnect failed: "+serial,"error")
@@ -405,7 +427,120 @@ def human_drag_gesture(driver, sx, sy, ex, ey):
         if hasattr(driver, 'swipe'):
             driver.swipe(sx, sy, ex, ey, duration=random.randint(250, 450))
             return True
+def human_network_jitter():
+    """Simulates realistic mobile cellular (4G/5G) / Wi-Fi network latency fluctuations (20ms-180ms)."""
+    jitter_sec = max(0.015, random.gauss(0.075, 0.025))
+    time.sleep(jitter_sec)
+
+def human_click_drift(driver, element=None, x=None, y=None, serial=None):
+    """
+    Clicks an element or coordinate with human touch micro-jitter (±8px..±15px X/Y offset)
+    and simulates a natural thumb contact patch (touch down -> 2-4px slight drift -> touch up).
+    """
+    human_network_jitter()
+    from selenium.webdriver.common.action_chains import ActionChains
+    try:
+        if element:
+            loc = element.location
+            sz = element.size
+            cx = loc["x"] + sz["width"] // 2
+            cy = loc["y"] + sz["height"] // 2
+        else:
+            cx, cy = x, y
+
+        jx = int(cx + random.gauss(0, 4))
+        jy = int(cy + random.gauss(0, 4))
+        dx = jx + random.choice([-3, -2, 2, 3])
+        dy = jy + random.choice([-3, -2, 2, 3])
+
+        if driver:
+            try:
+                actions = ActionChains(driver)
+                actions.w3c_actions.pointer_action.move_to_location(jx, jy)
+                actions.w3c_actions.pointer_action.pointer_down()
+                actions.w3c_actions.pointer_action.pause(random.uniform(0.04, 0.08))
+                actions.w3c_actions.pointer_action.move_to_location(dx, dy)
+                actions.w3c_actions.pointer_action.pointer_up()
+                actions.perform()
+                return True
+            except Exception:
+                pass
+
+        if serial:
+            adb("shell", "input", "swipe", str(jx), str(jy), str(dx), str(dy), "60", serial=serial)
+            return True
+    except Exception:
+        if element:
+            try: element.click(); return True
+            except Exception: pass
     return False
+
+def organic_playlist_browse(driver, serial=None):
+    """
+    Performs a natural Bézier scroll down the playlist before starting playback,
+    pauses as if inspecting track titles, scrolls back up slightly, and selects a track.
+    """
+    try:
+        if not driver: return
+        window_size = driver.get_window_size()
+        w = window_size.get('width', 1080)
+        h = window_size.get('height', 1920)
+
+        sx = w // 2 + random.randint(-40, 40)
+        sy = int(h * 0.68) + random.randint(-20, 20)
+        ey = int(h * 0.35) + random.randint(-20, 20)
+        human_drag_gesture(driver, sx, sy, sx, ey)
+        emit(f"[{serial[-6:] if serial else 'Device'}] 📜 Human playlist scroll down")
+        human_delay_gaussian(1.5, 0.4)
+
+        if random.random() < 0.45:
+            sy_up = int(h * 0.40)
+            ey_up = int(h * 0.55)
+            human_drag_gesture(driver, sx, sy_up, sx, ey_up)
+            emit(f"[{serial[-6:] if serial else 'Device'}] 📜 Human scroll nudge up")
+            human_delay_gaussian(1.0, 0.3)
+    except Exception:
+        pass
+
+def _battery_spoofer_worker():
+    """Cycles simulated battery percentage and charging state via ADB commands over time."""
+    level = 88
+    charging = True
+    while True:
+        try:
+            serials = [d["serial"] for d in state.get("devices", [])]
+            if state.get("battery_spoof") and serials:
+                if charging:
+                    level += random.randint(1, 3)
+                    if level >= 96:
+                        charging = False
+                else:
+                    level -= random.randint(1, 2)
+                    if level <= 72:
+                        charging = True
+
+                status_code = "2" if charging else "3" # 2 = Charging, 3 = Discharging
+                for s in serials:
+                    try:
+                        adb("shell", "dumpsys", "battery", "set", "status", status_code, serial=s)
+                        adb("shell", "dumpsys", "battery", "set", "level", str(level), serial=s)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+        time.sleep(300)
+
+def is_within_operating_hours():
+    sch = state.get("schedule", {})
+    if not sch.get("enabled"):
+        return True
+    current_hour = time.localtime().tm_hour
+    start_h = int(sch.get("start_hour", 7))
+    stop_h = int(sch.get("stop_hour", 23))
+    if start_h <= stop_h:
+        return start_h <= current_hour < stop_h
+    else:
+        return current_hour >= start_h or current_hour < stop_h
 
 def organic_micro_interaction(driver, serial=None):
     """Executes rare, non-disruptive human engagement actions during playback (Like track, volume tweak, artwork tap). NO PAUSES."""
@@ -873,6 +1008,16 @@ def _loop_worker(serial, query, min_sec, max_sec):
     tracks_played = 0
 
     while loop["active"]:
+        # 24/7 Operational Schedule Planner Check
+        if not is_within_operating_hours():
+            emit(f"[{serial[-6:]}] 🌙 Outside operational hours — sleeping until start time")
+            while not is_within_operating_hours() and loop["active"]:
+                time.sleep(30)
+            if not loop["active"]: break
+            emit(f"[{serial[-6:]}] ☀️ Operational start time reached — resuming loop")
+            apply_stealth_hardware_settings(serial)
+            open_target_or_query(driver, query, serial=serial)
+
         # Circadian Rhythm Time-of-Day Dynamics & Fatigue Scaling
         current_hour = time.localtime().tm_hour
         if 1 <= current_hour <= 6:
@@ -888,16 +1033,32 @@ def _loop_worker(serial, query, min_sec, max_sec):
         fatigue_scale = min(1.30, 1.0 + (tracks_played * 0.02))
         total_time_scale = circadian_scale * fatigue_scale
 
-        persona_roll = random.random()
-        if persona_roll < 0.70:
-            target_wait = int(random.uniform(lo * 0.85, hi * 1.05) * total_time_scale)
-            persona_name = "Full Listen"
-        elif persona_roll < 0.85:
-            target_wait = int(random.uniform(lo * 0.45, lo * 0.75) * total_time_scale)
-            persona_name = "Mid Listen"
-        else:
-            target_wait = int(random.randint(10, 22) * total_time_scale)
-            persona_name = "Quick Skip"
+        persona_type = state.get("persona", "super_fan")
+        if persona_type == "super_fan":
+            roll = random.random()
+            if roll < 0.95:
+                target_wait = int(random.uniform(lo * 0.90, hi * 1.05) * total_time_scale)
+                persona_name = "Super Fan (Full Play)"
+            else:
+                target_wait = int(random.uniform(lo * 0.90, hi * 1.05) * total_time_scale)
+                persona_name = "Super Fan (Replay)"
+                if driver:
+                    try: restart_song(driver)
+                    except Exception: pass
+        elif persona_type == "casual_listener":
+            roll = random.random()
+            if roll < 0.70:
+                target_wait = int(random.uniform(lo * 0.85, hi * 1.0) * total_time_scale)
+                persona_name = "Casual (Full Play)"
+            elif roll < 0.90:
+                target_wait = int(random.uniform(lo * 0.40, lo * 0.65) * total_time_scale)
+                persona_name = "Casual (Mid Skip)"
+            else:
+                target_wait = int(random.randint(12, 22) * total_time_scale)
+                persona_name = "Casual (Quick Skip)"
+        else: # radio_explorer
+            target_wait = int(random.uniform(lo * 0.85, hi * 1.0) * total_time_scale)
+            persona_name = "Radio Explorer"
 
         # Organic Rest Break after 12-18 tracks (~45-60 mins of continuous streaming)
         if tracks_played > 0 and tracks_played % random.randint(12, 18) == 0:
@@ -1250,6 +1411,13 @@ main{grid-area:mn;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:
       <div class="fr">
         <div class="field"><label>Min seconds</label><input id="loop-min" type="number" value="40" min="5"></div>
         <div class="field"><label>Max seconds</label><input id="loop-max" type="number" value="60" min="5"></div>
+        <div class="field"><label>Listener Persona</label>
+          <select id="loop-persona" onchange="setPersona(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--text);font-size:12px;outline:none;cursor:pointer">
+            <option value="super_fan">🌟 Super Fan (95% Full Plays, 5% Replays)</option>
+            <option value="casual_listener">🎧 Casual Listener (70% Full, 20% Mid Skips, 10% Quick)</option>
+            <option value="radio_explorer">📻 Radio Explorer (Explores Playlist & Auto-Play)</option>
+          </select>
+        </div>
       </div>
       <div class="br">
         <button class="btn bg" onclick="startAllLoops()">&#9654; Start All</button>
@@ -1258,6 +1426,24 @@ main{grid-area:mn;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:
         <button class="btn bg" style="padding:6px 12px;font-size:11px;background:#334155;color:#f8fafc" onclick="restoreAllBrightness()" title="Restores normal screen brightness">☀️ Restore Screen</button>
       </div>
       <div id="dev-loops" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><h2>⏰ 24/7 Operational Schedule Planner</h2><span class="tag">Auto-Sleep & Auto-Wake</span></div>
+    <div class="pb">
+      <div class="fr" style="align-items:center">
+        <div class="field"><label>Start Hour (0-23)</label><input id="sch-start" type="number" value="7" min="0" max="23"></div>
+        <div class="field"><label>Stop Hour (0-23)</label><input id="sch-stop" type="number" value="23" min="0" max="23"></div>
+        <div class="field" style="display:flex;align-items:center;gap:8px;margin-top:14px">
+          <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px">
+            <input type="checkbox" id="sch-enable" style="width:16px;height:16px;accent-color:var(--accent)"> Enable 24/7 Schedule
+          </label>
+        </div>
+      </div>
+      <div class="br">
+        <button class="btn bg" onclick="saveSchedule()">Save Schedule Settings</button>
+      </div>
     </div>
   </div>
 
@@ -1578,6 +1764,19 @@ function updateDevLoopCards(devs){
 async function connectAllAppium(){await api('/api/appium/connect','POST',{all:true});}
 async function connectAppiumForDevice(serial){await api('/api/appium/connect','POST',{serial});}
 
+async function setPersona(val){
+  const d = await api('/api/persona/set','POST',{persona:val});
+  if(d&&d.ok) logLine('Listener persona updated: '+val.toUpperCase().replace('_',' '),'info');
+}
+
+async function saveSchedule(){
+  const en = $('sch-enable').checked;
+  const st = parseInt($('sch-start').value)||7;
+  const sp = parseInt($('sch-stop').value)||23;
+  const d = await api('/api/schedule/set','POST',{enabled:en,start_hour:st,stop_hour:sp});
+  if(d&&d.ok) logLine('24/7 Schedule saved: '+(en?`Active (${st}:00 - ${sp}:00)`:'Disabled'),'info');
+}
+
 async function startAllLoops(){
   const q=$('loop-q').value.trim();
   const mn=parseInt($('loop-min').value)||40;
@@ -1897,6 +2096,39 @@ def api_scrcpy_stop():
         except Exception: pass
     state['scrcpy_procs'].clear()
     return jsonify({'ok':True})
+
+@app.route('/api/persona/set', methods=['POST'])
+def api_set_persona():
+    data = request.get_json(silent=True) or {}
+    persona = data.get('persona', 'super_fan')
+    if persona in ['super_fan', 'casual_listener', 'radio_explorer']:
+        state['persona'] = persona
+        emit(f"🎭 Listener Persona set to: {persona.upper().replace('_', ' ')}")
+        return jsonify({'ok': True, 'persona': persona})
+    return jsonify({'ok': False, 'error': 'Invalid persona option'})
+
+@app.route('/api/schedule/set', methods=['POST'])
+def api_set_schedule():
+    data = request.get_json(silent=True) or {}
+    enabled = bool(data.get('enabled', False))
+    start_h = int(data.get('start_hour', 7))
+    stop_h = int(data.get('stop_hour', 23))
+    state['schedule'] = {
+        'enabled': enabled,
+        'start_hour': start_h,
+        'stop_hour': stop_h
+    }
+    status_str = f"Active ({start_h:02d}:00 - {stop_h:02d}:00)" if enabled else "Disabled"
+    emit(f"⏰ 24/7 Operational Schedule: {status_str}")
+    return jsonify({'ok': True, 'schedule': state['schedule']})
+
+@app.route('/api/battery/spoof', methods=['POST'])
+def api_set_battery_spoof():
+    data = request.get_json(silent=True) or {}
+    enabled = bool(data.get('enabled', True))
+    state['battery_spoof'] = enabled
+    emit(f"🔋 Battery Cycle Spoofing: {'ENABLED' if enabled else 'DISABLED'}")
+    return jsonify({'ok': True, 'enabled': enabled})
 
 @app.route('/api/proxy/set', methods=['POST'])
 def api_proxy_set():
@@ -2259,6 +2491,7 @@ def api_logs():
 def index(): return UI_HTML
 
 if __name__ == '__main__':
+    threading.Thread(target=_battery_spoofer_worker, daemon=True).start()
     def start_flask():
         app.run(host='127.0.0.1', port=5050, debug=False, threaded=True)
 

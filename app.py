@@ -729,7 +729,7 @@ def find_and_open_playlist(driver, query, serial=None):
     p = plat()
     ensure_device_awake(serial)
     try:
-        human_delay_gaussian(1.2, 0.3)
+        human_delay_gaussian(0.4, 0.1)
         search_locators = [
             (AppiumBy.XPATH, '//*[contains(@content-desc,"Search") or contains(@content-desc,"Søk") or contains(@content-desc,"Fane 2") or contains(@content-desc,"Tab 2")]'),
             (AppiumBy.ACCESSIBILITY_ID, p["search_label"]),
@@ -746,7 +746,7 @@ def find_and_open_playlist(driver, query, serial=None):
             except Exception:
                 pass
 
-        human_delay_gaussian(1.2, 0.3)
+        human_delay_gaussian(0.4, 0.1)
         bar = None
         bar_locators = [
             (AppiumBy.XPATH, '//*[contains(@text,"Hva vil du lytte til") or contains(@text,"What do you want to listen to") or contains(@text,"écouter") or contains(@text,"escuchar")]'),
@@ -767,11 +767,11 @@ def find_and_open_playlist(driver, query, serial=None):
         if not bar:
             try:
                 driver.tap([(300, 140)])
-                time.sleep(0.5)
+                time.sleep(0.3)
             except Exception:
                 pass
 
-        human_delay_gaussian(0.8, 0.2)
+        human_delay_gaussian(0.3, 0.1)
         try:
             edit_fields = driver.find_elements(AppiumBy.XPATH, '//android.widget.EditText | //*[contains(@resource-id,"query") or contains(@resource-id,"text_input")]')
             if edit_fields:
@@ -784,14 +784,14 @@ def find_and_open_playlist(driver, query, serial=None):
         human_type_text(driver, bar, query, serial=serial)
 
         # Submit search query via ENTER keycode
-        human_delay_gaussian(0.8, 0.2)
+        human_delay_gaussian(0.3, 0.1)
         try:
             driver.press_keycode(66)  # KEYCODE_ENTER
         except Exception:
             if serial:
                 adb("shell", "input", "keyevent", "66", serial=serial)
 
-        human_delay_gaussian(2.2, 0.5)
+        human_delay_gaussian(1.0, 0.2)
 
         try:
             window_size = driver.get_window_size()
@@ -825,7 +825,7 @@ def find_and_open_playlist(driver, query, serial=None):
                 pass
 
         if results:
-            human_delay_gaussian(0.6, 0.2)
+            human_delay_gaussian(0.3, 0.1)
             try:
                 results[0].click()
             except Exception:
@@ -834,7 +834,7 @@ def find_and_open_playlist(driver, query, serial=None):
             # Fallback tap directly at top search result card position (32% height - safely above bottom mini-player)
             driver.tap([(w // 2, int(h * 0.32))])
 
-        human_delay_gaussian(2.5, 0.5)
+        human_delay_gaussian(1.0, 0.2)
         play_locators = [
             (AppiumBy.ID, "com.spotify.music:id/button_play_and_pause"),
             (AppiumBy.ID, "com.spotify.music:id/play_button"),
@@ -849,7 +849,7 @@ def find_and_open_playlist(driver, query, serial=None):
             except Exception:
                 pass
 
-        human_delay_gaussian(1.5, 0.3)
+        human_delay_gaussian(0.5, 0.1)
         emit("Opened and playing: " + query)
         return True
     except Exception as e:
@@ -1004,7 +1004,7 @@ def open_target_or_query(driver, query, serial=None):
             emit(f"Could not launch target URI on device {serial}", "error")
             return False
 
-        human_delay_gaussian(2.0, 0.4)
+        human_delay_gaussian(0.5, 0.1)
 
         # Auto-dismiss 'Åpne med' / 'Open with' chooser if app defaults aren't set
         if driver:
@@ -1012,15 +1012,15 @@ def open_target_or_query(driver, query, serial=None):
                 spotify_btns = driver.find_elements(AppiumBy.XPATH, '//*[contains(@text,"Spotify")]')
                 if spotify_btns:
                     spotify_btns[0].click()
-                    time.sleep(0.5)
+                    time.sleep(0.3)
                     choice_btns = driver.find_elements(AppiumBy.XPATH, '//*[contains(@text,"ALLTID") or contains(@text,"ALWAYS") or contains(@text,"BARE ÉN GANG") or contains(@text,"JUST ONCE")]')
                     if choice_btns:
                         choice_btns[0].click()
-                        time.sleep(1.0)
+                        time.sleep(0.5)
             except Exception:
                 pass
 
-            human_delay_gaussian(1.5, 0.4)
+            human_delay_gaussian(0.4, 0.1)
             
             play_locators = [
                 (AppiumBy.ID, "com.spotify.music:id/button_play_and_pause"),
@@ -1036,11 +1036,11 @@ def open_target_or_query(driver, query, serial=None):
                 except Exception:
                     pass
         else:
-            time.sleep(1.5)
+            time.sleep(0.5)
             if serial:
                 adb("shell", "input", "keyevent", "85", serial=serial) # KEYCODE_MEDIA_PLAY_PAUSE
 
-        human_delay_gaussian(1.5, 0.3)
+        human_delay_gaussian(0.4, 0.1)
         emit("Opened and playing target URL: " + clean_q)
         return True
 
@@ -1062,7 +1062,7 @@ def _loop_worker(serial, query, min_sec, max_sec):
     apply_stealth_hardware_settings(serial)
     if not open_target_or_query(driver, query, serial=serial):
         loop["active"]=False; return
-    human_delay_gaussian(mean_sec=1.5, std_sec=0.4)
+    human_delay_gaussian(mean_sec=0.4, std_sec=0.1)
     ensure_playing(driver)
 
     loop_start_time = time.time()
@@ -2368,18 +2368,22 @@ def api_loop_start():
     targets=[t for t in targets if t]
     if not targets: return jsonify({'ok':False,'error':'No devices found — connect phone over USB'})
 
-    for serial in targets:
-        if serial not in state['drivers'] or not state['drivers'][serial]:
-            emit(f"[{serial[-6:]}] Auto-connecting Appium driver...")
+    def _connect_single_device(s):
+        if s not in state['drivers'] or not state['drivers'][s]:
+            emit(f"[{s[-6:]}] Auto-connecting Appium driver...")
             try:
-                drv = _make_driver(serial)
+                drv = _make_driver(s)
                 if drv:
-                    state['drivers'][serial] = drv
-                    if serial not in state['watchdogs']:
-                        wt = threading.Thread(target=_watchdog, args=(serial,), daemon=True)
-                        state['watchdogs'][serial] = wt; wt.start()
+                    state['drivers'][s] = drv
+                    if s not in state['watchdogs']:
+                        wt = threading.Thread(target=_watchdog, args=(s,), daemon=True)
+                        state['watchdogs'][s] = wt; wt.start()
             except Exception as e:
-                emit(f"[{serial[-6:]}] Appium connect error: {e}", "error")
+                emit(f"[{s[-6:]}] Appium connect error: {e}", "error")
+
+    connect_threads = [threading.Thread(target=_connect_single_device, args=(s,), daemon=True) for s in targets]
+    for ct in connect_threads: ct.start()
+    for ct in connect_threads: ct.join(timeout=15.0)
 
     connected_targets=[t for t in targets if t in state['drivers'] and state['drivers'][t]]
     if not connected_targets:

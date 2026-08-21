@@ -191,29 +191,28 @@ def is_appium_running():
         return req.status == 200
     except Exception:
         import socket
-        s = socket.socket()
-        s.settimeout(0.5)
         try:
+            s = socket.socket()
+            s.settimeout(0.5)
             s.connect(('127.0.0.1', 4723))
             s.close()
             return True
         except Exception:
-            s.close()
             return False
 
 def clean_port_4723():
     if is_appium_running():
         return True
     import socket
-    s = socket.socket()
-    s.settimeout(0.5)
     busy = False
     try:
+        s = socket.socket()
+        s.settimeout(0.5)
         s.connect(('127.0.0.1', 4723))
         s.close()
         busy = True
     except Exception:
-        s.close()
+        pass
 
     if busy:
         emit("Port 4723 occupied by un-responsive process. Clearing via netstat...")
@@ -319,8 +318,8 @@ def _watchdog(serial):
 
         # Self-Healing Check: Ensure target app is focused in foreground
         try:
-            focus_out = adb("shell", "dumpsys", "window", "displays", serial=serial)
-            if focus_out and pkg not in str(focus_out):
+            focus_out, code = adb("shell", "dumpsys", "window", "displays", serial=serial)
+            if code == 0 and focus_out and pkg not in focus_out:
                 loop = state["loops"].get(serial, {})
                 if loop.get("active"):
                     emit(f"[{serial[-6:]}] 🏥 Self-Healing Watchdog: App closed/crashed — auto-relaunching {pkg}")
@@ -572,10 +571,10 @@ def _battery_spoofer_worker():
                     try:
                         adb("shell", "dumpsys", "battery", "set", "status", status_code, serial=s)
                         adb("shell", "dumpsys", "battery", "set", "level", str(level), serial=s)
-                    except Exception:
-                        pass
-        except Exception:
-            pass
+                    except Exception as e:
+                        emit(f"[{s[-6:] if s else 'Device'}] Battery spoofing notice: {e}", "warning")
+        except Exception as e:
+            emit(f"Battery spoofer error: {e}", "warning")
         time.sleep(300)
 
 def is_within_operating_hours():
@@ -585,7 +584,7 @@ def is_within_operating_hours():
     current_hour = time.localtime().tm_hour
     start_h = int(sch.get("start_hour", 7))
     stop_h = int(sch.get("stop_hour", 23))
-    if start_h <= stop_h:
+    if start_h < stop_h:
         return start_h <= current_hour < stop_h
     else:
         return current_hour >= start_h or current_hour < stop_h
@@ -763,7 +762,7 @@ def find_and_open_playlist(driver, query, serial=None):
                 bar.click()
                 break
             except Exception:
-                pass
+                bar = None
 
         if not bar:
             try:
@@ -857,7 +856,7 @@ def find_and_open_playlist(driver, query, serial=None):
         emit("Playlist error: " + str(e), "error")
         return False
 
-def restart_song(driver):
+def restart_song(driver, serial=None):
     from appium.webdriver.common.appiumby import AppiumBy
     p = plat()
     try:
@@ -866,13 +865,16 @@ def restart_song(driver):
         sx = loc["x"] + sz["width"] - random.randint(8, 18)
         sy = loc["y"] + sz["height"] // 2
         ex = loc["x"] + random.randint(2, 6)
-        if human_drag_gesture(driver, sx, sy, ex, sy):
+        if human_drag_gesture(driver, sx, sy, ex, sy, serial=serial):
             emit("Restarted (Bézier drag gesture)")
             return
     except Exception:
         pass
     try:
-        driver.press_keycode(88) # KEYCODE_MEDIA_PREVIOUS
+        if serial:
+            adb("shell", "input", "keyevent", "88", serial=serial)
+        elif driver:
+            driver.press_keycode(88) # KEYCODE_MEDIA_PREVIOUS
         emit("Restarted (keycode)")
     except Exception as e:
         emit("Restart failed: "+str(e),"error")
@@ -979,19 +981,28 @@ def open_target_or_query(driver, query, serial=None):
         target_uri = normalize_spotify_url(clean_q)
         pkg = p.get("package", "com.spotify.music")
         emit(f"Opening direct URL/URI ({target_uri}) on package {pkg}")
+        launch_ok = False
         try:
             if serial:
-                adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", target_uri, "-p", pkg, serial=serial)
+                _, code = adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", target_uri, "-p", pkg, serial=serial)
+                launch_ok = (code == 0)
             elif driver:
                 driver.get(target_uri)
+                launch_ok = True
         except Exception:
             try:
                 if serial:
-                    adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", clean_q, "-p", pkg, serial=serial)
+                    _, code = adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", clean_q, "-p", pkg, serial=serial)
+                    launch_ok = (code == 0)
                 elif driver:
                     driver.get(clean_q)
-            except Exception:
-                pass
+                    launch_ok = True
+            except Exception as e:
+                emit(f"Failed to open URI ({clean_q}): {e}", "error")
+
+        if not launch_ok:
+            emit(f"Could not launch target URI on device {serial}", "error")
+            return False
 
         human_delay_gaussian(2.0, 0.4)
 
@@ -1039,7 +1050,9 @@ def open_target_or_query(driver, query, serial=None):
 # LOOP WORKER
 # ===========================================
 def _loop_worker(serial, query, min_sec, max_sec):
-    loop   = state["loops"][serial]
+    loop = state["loops"].get(serial)
+    if not loop:
+        emit("No loop state found for "+serial,"error"); return
     driver = state["drivers"].get(serial)
     if not driver:
         emit("No driver for "+serial,"error"); loop["active"]=False; return
@@ -2080,17 +2093,44 @@ def api_launch():
     s = state['selected']
     if not s: return jsonify({'ok':False,'error':'No device selected'})
     p = plat()
-    adb('shell','am','start','-n',p['package']+'/'+p['activity'],serial=s)
-    emit(p['name']+' launching...')
-    return jsonify({'ok': True})
+    try:
+        adb('shell','am','start','-n',p['package']+'/'+p['activity'],serial=s)
+        emit(p['name']+' launching...')
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)})
 
 @app.route('/api/app/stop', methods=['POST'])
 def api_stop():
     s = state['selected']
     if not s: return jsonify({'ok':False,'error':'No device selected'})
-    adb('shell','am','force-stop',plat()['package'],serial=s)
-    emit(plat()['name']+' stopped')
-    return jsonify({'ok': True})
+    try:
+        adb('shell','am','force-stop',plat()['package'],serial=s)
+        emit(plat()['name']+' stopped')
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)})
+
+@app.route('/api/appium/loop/status')
+def api_loop_status():
+    out={}
+    for serial,loop in state['loops'].items():
+        nxt=loop.get('next_restart')
+        out[serial]={'active':loop.get('active',False),
+            'remaining':max(0,int(nxt-time.time())) if nxt else None,
+            'cycles':loop.get('cycles',0),'total_time':loop.get('total_time',0),
+            'persona':state.get('persona', 'super_fan')}
+    return jsonify(out)
+
+@app.route('/api/status')
+def api_status():
+    active=sum(1 for l in state['loops'].values() if l.get('active'))
+    return jsonify({'selected':state['selected'],'platform':state['platform'],
+        'proxy_active':state['proxy_active'],'scrcpy_open':list(state['scrcpy_procs'].keys()),
+        'active_loops':active,'connected_drivers':list(state['drivers'].keys()),
+        'persona':state.get('persona', 'super_fan'),
+        'battery_spoof':state.get('battery_spoof', False),
+        'schedule':state.get('schedule', {})})
 
 def refocus_scrcpy_window(serial):
     try:
@@ -2393,16 +2433,6 @@ def api_stealth_restore():
         restore_hardware_settings(serial)
     return jsonify({'ok': True, 'count': len(targets)})
 
-@app.route('/api/appium/loop/status')
-def api_loop_status():
-    out={}
-    for serial,loop in state['loops'].items():
-        nxt=loop.get('next_restart')
-        out[serial]={'active':loop.get('active',False),
-            'remaining':max(0,int(nxt-time.time())) if nxt else None,
-            'cycles':loop.get('cycles',0),'total_time':loop.get('total_time',0)}
-    return jsonify(out)
-
 @app.route('/api/accounts', methods=['GET'])
 def api_acc_get(): return jsonify(load_vault())
 
@@ -2518,13 +2548,6 @@ def api_tools():
     res = {k: bool(shutil.which(k)) for k in ['adb', 'scrcpy', 'appium', 'mitmdump']}
     res['appium_running'] = is_appium_running()
     return jsonify(res)
-
-@app.route('/api/status')
-def api_status():
-    active=sum(1 for l in state['loops'].values() if l.get('active'))
-    return jsonify({'selected':state['selected'],'platform':state['platform'],
-        'proxy_active':state['proxy_active'],'scrcpy_open':list(state['scrcpy_procs'].keys()),
-        'active_loops':active,'connected_drivers':list(state['drivers'].keys())})
 
 @app.route('/api/logs')
 def api_logs():
